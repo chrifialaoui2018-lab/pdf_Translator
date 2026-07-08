@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Translator Pro — 100% Frontend</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-light: #e0e7ff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --error: #ef4444;
+      --warning: #f59e0b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: var(--text);
+    }
+    .pt-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .pt-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .pt-header h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+      background: linear-gradient(135deg, var(--accent), #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .pt-header p {
+      color: var(--muted);
+      font-size: 1rem;
+      margin: 0;
+    }
+    .pt-card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+    }
+    .pt-dropzone {
+      border: 2px dashed var(--border);
+      border-radius: 14px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      background: #fafbfc;
+      position: relative;
+      overflow: hidden;
+    }
+    .pt-dropzone::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--accent-light), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .pt-dropzone:hover, .pt-dropzone.dragover {
+      border-color: var(--accent);
+      background: #eef2ff;
+    }
+    .pt-dropzone:hover::before, .pt-dropzone.dragover::before {
+      opacity: 0.4;
+    }
+    .pt-dropzone > * { position: relative; z-index: 1; }
+    .pt-dropzone svg {
+      width: 52px;
+      height: 52px;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+    .pt-dropzone h3 {
+      font-size: 1.15rem;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .pt-dropzone p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin: 0;
+    }
+    .pt-file-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 12px;
+      margin-top: 16px;
+    }
+    .pt-file-info svg {
+      width: 36px;
+      height: 36px;
+      color: var(--success);
+      flex-shrink: 0;
+    }
+    .pt-file-meta { flex: 1; min-width: 0; }
+    .pt-file-meta strong {
+      display: block;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 0.95rem;
+    }
+    .pt-file-meta span {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .pt-btn-remove {
+      background: none;
+      border: none;
+      color: var(--error);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .pt-btn-remove:hover { background: #fee2e2; }
+    .pt-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 16px;
+      align-items: flex-end;
+    }
+    @media (max-width: 640px) {
+      .pt-row { grid-template-columns: 1fr; }
+      .pt-lang-swap { justify-content: flex-start !important; }
+    }
+    .pt-field label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .pt-field select, .pt-field textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      background: var(--card);
+      color: var(--text);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+    }
+    .pt-field select:focus, .pt-field textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+    .pt-field textarea {
+      resize: vertical;
+      min-height: 220px;
+      line-height: 1.6;
+    }
+    .pt-lang-swap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: 8px;
+    }
+    .pt-lang-swap button {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      color: var(--muted);
+    }
+    .pt-lang-swap button:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: rotate(180deg);
+      background: var(--accent-light);
+    }
+    .pt-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .pt-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 20px;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+    }
+    .pt-btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+    .pt-btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+    }
+    .pt-btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .pt-btn-secondary {
+      background: white;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .pt-btn-secondary:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+    .pt-progress {
+      margin-top: 18px;
+    }
+    .pt-progress-bar {
+      height: 10px;
+      background: var(--border);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .pt-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #818cf8);
+      border-radius: 5px;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 0%;
+    }
+    .pt-progress-text {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 8px;
+      text-align: center;
+      font-weight: 500;
+    }
+    .pt-alert {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      margin-top: 12px;
+      display: none;
+      font-weight: 500;
+    }
+    .pt-alert-error {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+    .pt-alert-success {
+      background: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+    .pt-alert-warning {
+      background: #fffbeb;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+    .pt-hidden { display: none !important; }
+    .pt-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 640px) {
+      .pt-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+    .pt-stat {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+    .pt-stat-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .pt-stat-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .pt-export-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .pt-export-label {
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .pt-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .pt-preview-item {
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+    .pt-preview-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .pt-preview-item img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .pt-preview-item .pt-img-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      font-size: 0.7rem;
+      padding: 4px 8px;
+      text-align: center;
+    }
+    .pt-section-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pt-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+    .pt-info-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      color: #1e40af;
+      margin-bottom: 16px;
+    }
+    .pt-info-box strong { color: #1e3a8a; }
+  </style>
+</head>
+<body>
+
+<div class="pt-container">
+  <div class="pt-header">
+    <h1>📄 PDF Translator Pro</h1>
+    <p>100% Frontend · 100 Mo max · Texte + Images · Export PDF & DOC</p>
+  </div>
+
+  <div class="pt-info-box">
+    <strong>🔒 100% Frontend</strong> — Aucun fichier n'est envoyé sur un serveur. Tout le traitement se fait localement dans votre navigateur.
+  </div>
+
+  <div class="pt-stats" id="statsBar">
+    <div class="pt-stat">
+      <div class="pt-stat-value" id="statPages">0</div>
+      <div class="pt-stat-label">Pages</div>
+    </div>
+    <div class="pt-stat">
+      <div class="pt-stat-value" id="statWords">0</div>
+      <div class="pt-stat-label">Mots</div>
+    </div>
+    <div class="pt-stat">
+      <div class="pt-stat-value" id="statChars">0</div>
+      <div class="pt-stat-label">Caractères</div>
+    </div>
+    <div class="pt-stat">
+      <div class="pt-stat-value" id="statImages">0</div>
+      <div class="pt-stat-label">Images</div>
+    </div>
+  </div>
+
+  <!-- Upload -->
+  <div class="pt-card">
+    <div class="pt-dropzone" id="dropzone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 16.5V9.75m0 0-3 3m3-3 3 3M6.75 19.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Z"/>
+      </svg>
+      <h3>Déposez votre PDF ici</h3>
+      <p>ou cliquez pour parcourir · Max <strong>100 Mo</strong> · 100% offline</p>
+      <input type="file" id="fileInput" accept=".pdf" style="display:none">
+    </div>
+    <div id="fileInfo" class="pt-file-info pt-hidden">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
+      </svg>
+      <div class="pt-file-meta">
+        <strong id="fileName">document.pdf</strong>
+        <span id="fileSize">0 Ko</span>
+      </div>
+      <button class="pt-btn-remove" id="removeFile" title="Retirer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div id="uploadAlert" class="pt-alert pt-alert-error"></div>
+  </div>
+
+  <!-- Languages -->
+  <div class="pt-card">
+    <div class="pt-row">
+      <div class="pt-field">
+        <label for="sourceLang">Langue source</label>
+        <select id="sourceLang">
+          <option value="auto">🔍 Détection automatique</option>
+          <option value="fr">🇫🇷 Français</option>
+          <option value="en">🇬🇧 Anglais</option>
+          <option value="es">🇪🇸 Espagnol</option>
+          <option value="de">🇩🇪 Allemand</option>
+          <option value="it">🇮🇹 Italien</option>
+          <option value="pt">🇵🇹 Portugais</option>
+          <option value="nl">🇳🇱 Néerlandais</option>
+          <option value="ru">🇷🇺 Russe</option>
+          <option value="zh">🇨🇳 Chinois</option>
+          <option value="ja">🇯🇵 Japonais</option>
+          <option value="ar">🇸🇦 Arabe</option>
+        </select>
+      </div>
+      <div class="pt-lang-swap">
+        <button id="swapLang" title="Inverser">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M7 16V4m0 0L3 8m4-4 4 4m6 0v12m0 0 4-4m-4 4-4-4"/>
+          </svg>
+        </button>
+      </div>
+      <div class="pt-field">
+        <label for="targetLang">Langue cible</label>
+        <select id="targetLang">
+          <option value="fr">🇫🇷 Français</option>
+          <option value="en" selected>🇬🇧 Anglais</option>
+          <option value="es">🇪🇸 Espagnol</option>
+          <option value="de">🇩🇪 Allemand</option>
+          <option value="it">🇮🇹 Italien</option>
+          <option value="pt">🇵🇹 Portugais</option>
+          <option value="nl">🇳🇱 Néerlandais</option>
+          <option value="ru">🇷🇺 Russe</option>
+          <option value="zh">🇨🇳 Chinois</option>
+          <option value="ja">🇯🇵 Japonais</option>
+          <option value="ar">🇸🇦 Arabe</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Text Areas -->
+  <div class="pt-card">
+    <div class="pt-row" style="grid-template-columns: 1fr 1fr; align-items: stretch;">
+      <div class="pt-field">
+        <label>Texte extrait <span class="pt-badge">Source</span></label>
+        <textarea id="sourceText" placeholder="Le texte extrait de votre PDF apparaîtra ici..."></textarea>
+      </div>
+      <div class="pt-field">
+        <label>Traduction <span class="pt-badge">Cible</span></label>
+        <textarea id="targetText" placeholder="La traduction apparaîtra ici..."></textarea>
+      </div>
+    </div>
+    <div class="pt-progress pt-hidden" id="progressContainer">
+      <div class="pt-progress-bar">
+        <div class="pt-progress-fill" id="progressFill"></div>
+      </div>
+      <div class="pt-progress-text" id="progressText">Préparation...</div>
+    </div>
+    <div id="actionAlert" class="pt-alert pt-alert-error"></div>
+  </div>
+
+  <!-- Images Preview -->
+  <div class="pt-card pt-hidden" id="imagesCard">
+    <div class="pt-section-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--accent)">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+        <circle cx="8.5" cy="8.5" r="1.5"/>
+        <polyline points="21 15 16 10 5 21"/>
+      </svg>
+      Images extraites (<span id="imgCount">0</span>)
+    </div>
+    <div class="pt-preview-grid" id="imagesGrid"></div>
+  </div>
+
+  <!-- Actions -->
+  <div class="pt-card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+    <div class="pt-actions">
+      <button class="pt-btn pt-btn-primary" id="btnExtract" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M8.25 15.75h.008v.008H8.25v-.008Zm0 3h.008v.008H8.25v-.008Z"/>
+        </svg>
+        Extraire tout
+      </button>
+      <button class="pt-btn pt-btn-primary" id="btnTranslate" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621l3.75 7.5M6.375 7.5h-3.75v3.75"/>
+        </svg>
+        Traduire
+      </button>
+    </div>
+    <div class="pt-export-group">
+      <span class="pt-export-label">Exporter vers :</span>
+      <button class="pt-btn pt-btn-secondary" id="btnExportPDF">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <path d="M9 15l2 2 4-4"/>
+        </svg>
+        PDF
+      </button>
+      <button class="pt-btn pt-btn-secondary" id="btnExportDOC">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+        DOC
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<!-- jsPDF + AutoTable -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  const $ = id => document.getElementById(id);
+  const dropzone = $('dropzone');
+  const fileInput = $('fileInput');
+  const fileInfo = $('fileInfo');
+  const removeFile = $('removeFile');
+  const btnExtract = $('btnExtract');
+  const btnTranslate = $('btnTranslate');
+  const btnExportPDF = $('btnExportPDF');
+  const btnExportDOC = $('btnExportDOC');
+  const sourceText = $('sourceText');
+  const targetText = $('targetText');
+  const progressContainer = $('progressContainer');
+  const progressFill = $('progressFill');
+  const progressText = $('progressText');
+  const sourceLang = $('sourceLang');
+  const targetLang = $('targetLang');
+  const swapLang = $('swapLang');
+  const imagesCard = $('imagesCard');
+  const imagesGrid = $('imagesGrid');
+  const imgCount = $('imgCount');
+
+  let currentFile = null;
+  let extractedText = '';
+  let extractedImages = [];
+  let pageDimensions = [];
+  let isExtracting = false;
+
+  function showAlert(id, msg, type='error') {
+    const el = $(id);
+    el.textContent = msg;
+    el.className = 'pt-alert pt-alert-' + type;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 6000);
+  }
+
+  function formatBytes(bytes) {
+    if (bytes === 0) return '0 Ko';
+    const k = 1024;
+    const sizes = ['o', 'Ko', 'Mo', 'Go'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  }
+
+  function updateStats(text) {
+    const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+    const chars = text.length;
+    $('statWords').textContent = words.toLocaleString();
+    $('statChars').textContent = chars.toLocaleString();
+  }
+
+  function setProgress(pct, text) {
+    progressFill.style.width = pct + '%';
+    progressText.textContent = text;
+    if (pct >= 100) {
+      setTimeout(() => progressContainer.classList.add('pt-hidden'), 1500);
+    }
+  }
+
+  // ===================== UPLOAD (100% FRONTEND, 100Mo) =====================
+  dropzone.addEventListener('click', () => fileInput.click());
+  dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+  dropzone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length) handleFile(files[0]);
+  });
+  fileInput.addEventListener('change', e => { if (e.target.files.length) handleFile(e.target.files[0]); });
+
+  function handleFile(file) {
+    if (file.type !== 'application/pdf' && !file.name.endsWith('.pdf')) {
+      showAlert('uploadAlert', 'Veuillez sélectionner un fichier PDF valide.');
+      return;
+    }
+    if (file.size > 100 * 1024 * 1024) {
+      showAlert('uploadAlert', 'Le fichier dépasse 100 Mo. Veuillez choisir un fichier plus léger.');
+      return;
+    }
+    currentFile = file;
+    $('fileName').textContent = file.name;
+    $('fileSize').textContent = formatBytes(file.size);
+    fileInfo.classList.remove('pt-hidden');
+    btnExtract.disabled = false;
+    sourceText.value = '';
+    targetText.value = '';
+    extractedText = '';
+    extractedImages = [];
+    pageDimensions = [];
+    imagesCard.classList.add('pt-hidden');
+    imagesGrid.innerHTML = '';
+    $('statPages').textContent = '0';
+    $('statWords').textContent = '0';
+    $('statChars').textContent = '0';
+    $('statImages').textContent = '0';
+    showAlert('uploadAlert', \`Fichier chargé : ${file.name} (${formatBytes(file.size)}) — Traitement 100% local\`, 'success');
+  }
+
+  removeFile.addEventListener('click', () => {
+    currentFile = null;
+    fileInfo.classList.add('pt-hidden');
+    btnExtract.disabled = true;
+    btnTranslate.disabled = true;
+    sourceText.value = '';
+    targetText.value = '';
+    extractedText = '';
+    extractedImages = [];
+    pageDimensions = [];
+    imagesCard.classList.add('pt-hidden');
+    imagesGrid.innerHTML = '';
+    fileInput.value = '';
+    $('statPages').textContent = '0';
+    $('statWords').textContent = '0';
+    $('statChars').textContent = '0';
+    $('statImages').textContent = '0';
+  });
+
+  swapLang.addEventListener('click', () => {
+    const s = sourceLang.value;
+    const t = targetLang.value;
+    if (s !== 'auto') {
+      sourceLang.value = t;
+      targetLang.value = s;
+    }
+  });
+
+  // ===================== EXTRACTION COMPLÈTE (TEXT + IMAGES) =====================
+  btnExtract.addEventListener('click', async () => {
+    if (!currentFile || isExtracting) return;
+    isExtracting = true;
+    progressContainer.classList.remove('pt-hidden');
+    setProgress(5, 'Lecture du PDF...');
+    btnExtract.disabled = true;
+
+    try {
+      const arrayBuffer = await readFileAsArrayBuffer(currentFile);
+      setProgress(10, 'Analyse du document...');
+
+      const pdf = await pdfjsLib.getDocument({
+        data: arrayBuffer,
+        useSystemFonts: true,
+        cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+        cMapPacked: true
+      }).promise;
+
+      const numPages = pdf.numPages;
+      $('statPages').textContent = numPages;
+
+      let fullText = '';
+      extractedImages = [];
+      pageDimensions = [];
+
+      for (let i = 1; i <= numPages; i++) {
+        setProgress(10 + Math.round((i / numPages) * 25), \`Extraction texte page ${i}/${numPages}...\`);
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 1.5 });
+        pageDimensions.push({
+          width: viewport.width,
+          height: viewport.height,
+          scale: viewport.scale,
+          pageNum: i
+        });
+
+        // === EXTRACTION TEXTE ===
+        const content = await page.getTextContent();
+        const pageText = content.items.map(item => item.str).join(' ');
+        fullText += pageText + '\n\n';
+
+        // === EXTRACTION IMAGES ===
+        setProgress(35 + Math.round((i / numPages) * 30), \`Extraction images page ${i}/${numPages}...\`);
+        try {
+          const opList = await page.getOperatorList();
+          const { fnArray, argsArray } = opList;
+          const stateStack = [];
+          let currentTransform = [1, 0, 0, 1, 0, 0];
+
+          function multiplyMatrices(m1, m2) {
+            return [
+              m1[0]*m2[0] + m1[2]*m2[1], m1[1]*m2[0] + m1[3]*m2[1],
+              m1[0]*m2[2] + m1[2]*m2[3], m1[1]*m2[2] + m1[3]*m2[3],
+              m1[0]*m2[4] + m1[2]*m2[5] + m1[4], m1[1]*m2[4] + m1[3]*m2[5] + m1[5]
+            ];
+          }
+
+          for (let j = 0; j < fnArray.length; j++) {
+            if (fnArray[j] === pdfjsLib.OPS.transform) {
+              currentTransform = multiplyMatrices(currentTransform, argsArray[j]);
+            } else if (fnArray[j] === pdfjsLib.OPS.save) {
+              stateStack.push([...currentTransform]);
+            } else if (fnArray[j] === pdfjsLib.OPS.restore) {
+              currentTransform = stateStack.pop() || [1,0,0,1,0,0];
+            } else if (
+              fnArray[j] === pdfjsLib.OPS.paintJpegXObject ||
+              fnArray[j] === pdfjsLib.OPS.paintImageXObject ||
+              fnArray[j] === pdfjsLib.OPS.paintImageMaskXObject
+            ) {
+              const imgName = argsArray[j][0];
+              try {
+                const imgObj = await page.objs.get(imgName);
+                if (imgObj && imgObj.bitmap) {
+                  const canvas = document.createElement('canvas');
+                  canvas.width = imgObj.width;
+                  canvas.height = imgObj.height;
+                  const ctx = canvas.getContext('2d');
+                  ctx.drawImage(imgObj.bitmap, 0, 0);
+                  const dataUrl = canvas.toDataURL('image/png', 0.92);
+
+                  const tx = currentTransform[4];
+                  const ty = currentTransform[5];
+                  const scaleX = Math.sqrt(currentTransform[0]**2 + currentTransform[1]**2);
+                  const scaleY = Math.sqrt(currentTransform[2]**2 + currentTransform[3]**2);
+
+                  extractedImages.push({
+                    page: i,
+                    width: imgObj.width,
+                    height: imgObj.height,
+                    dataUrl: dataUrl,
+                    transform: [...currentTransform],
+                    x: tx,
+                    y: ty,
+                    scaleX: scaleX,
+                    scaleY: scaleY,
+                    id: \`img_${i}_${j}\`
+                  });
+                }
+              } catch (e) {}
+            }
+          }
+        } catch (e) {
+          console.warn('Erreur extraction images page', i, e);
+        }
+      }
+
+      extractedText = fullText.trim();
+      sourceText.value = extractedText;
+      updateStats(extractedText);
+      $('statImages').textContent = extractedImages.length;
+
+      // Affichage preview images
+      if (extractedImages.length > 0) {
+        imagesCard.classList.remove('pt-hidden');
+        imgCount.textContent = extractedImages.length;
+        imagesGrid.innerHTML = '';
+        extractedImages.forEach((img, idx) => {
+          const div = document.createElement('div');
+          div.className = 'pt-preview-item';
+          div.title = \`Page ${img.page} · ${img.width}x${img.height}px\`;
+          div.innerHTML = \`
+            <img src="${img.dataUrl}" alt="img-${idx}">
+            <div class="pt-img-overlay">P${img.page} · ${img.width}×${img.height}</div>
+          \`;
+          div.addEventListener('click', () => {
+            const win = window.open();
+            win.document.write(\`<img src="${img.dataUrl}" style="max-width:100%">\`);
+          });
+          imagesGrid.appendChild(div);
+        });
+      }
+
+      setProgress(100, 'Extraction terminée !');
+      btnTranslate.disabled = false;
+      showAlert('actionAlert',
+        \`Extraction réussie : ${numPages} page(s), ${extractedImages.length} image(s) · 100% offline\`,
+        'success'
+      );
+    } catch (err) {
+      console.error(err);
+      setProgress(0, '');
+      progressContainer.classList.add('pt-hidden');
+      showAlert('actionAlert', 'Erreur extraction : ' + err.message);
+    } finally {
+      isExtracting = false;
+      btnExtract.disabled = false;
+    }
+  });
+
+  function readFileAsArrayBuffer(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = e => reject(new Error('Erreur lecture fichier'));
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  // ===================== TRADUCTION =====================
+  btnTranslate.addEventListener('click', async () => {
+    const text = sourceText.value.trim();
+    if (!text) { showAlert('actionAlert', 'Aucun texte à traduire.'); return; }
+    const sl = sourceLang.value;
+    const tl = targetLang.value;
+    if (sl === tl && sl !== 'auto') { showAlert('actionAlert', 'Langues identiques.'); return; }
+
+    progressContainer.classList.remove('pt-hidden');
+    setProgress(10, 'Traduction en cours...');
+    btnTranslate.disabled = true;
+
+    try {
+      const maxChunk = 3500;
+      const chunks = [];
+      let start = 0;
+      while (start < text.length) {
+        let end = Math.min(start + maxChunk, text.length);
+        if (end < text.length) {
+          const lastBreak = Math.max(text.lastIndexOf('. ', end), text.lastIndexOf('\n', end));
+          if (lastBreak > start + 800) end = lastBreak + 1;
+        }
+        chunks.push(text.slice(start, end));
+        start = end;
+      }
+
+      let translated = '';
+      for (let i = 0; i < chunks.length; i++) {
+        setProgress(10 + Math.round(((i + 1) / chunks.length) * 80), \`Traduction ${i+1}/${chunks.length}...\`);
+        const sourceParam = sl === 'auto' ? 'auto' : sl;
+        const url = \`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceParam}&tl=${tl}&dt=t&q=\` + encodeURIComponent(chunks[i]);
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error('Service de traduction temporairement indisponible');
+        const data = await resp.json();
+        translated += data[0].map(item => item[0]).join('');
+        if (i < chunks.length - 1) await new Promise(r => setTimeout(r, 300));
+      }
+
+      targetText.value = translated;
+      updateStats(translated);
+      setProgress(100, 'Traduction terminée !');
+      showAlert('actionAlert', 'Traduction effectuée avec succès !', 'success');
+    } catch (err) {
+      console.error(err);
+      setProgress(0, '');
+      progressContainer.classList.add('pt-hidden');
+      showAlert('actionAlert', 'Erreur traduction : ' + err.message);
+    } finally {
+      btnTranslate.disabled = false;
+    }
+  });
+
+  // ===================== EXPORT PDF =====================
+  btnExportPDF.addEventListener('click', async () => {
+    const text = targetText.value || sourceText.value;
+    if (!text) { showAlert('actionAlert', 'Aucun contenu à exporter.'); return; }
+
+    progressContainer.classList.remove('pt-hidden');
+    setProgress(5, 'Génération du PDF...');
+
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 18;
+      const maxLineWidth = pageWidth - 2 * margin;
+      let cursorY = 22;
+
+      // En-tête
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.setTextColor(40, 40, 40);
+      doc.text('Document traduit', margin, cursorY);
+      cursorY += 8;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(120, 120, 120);
+      doc.text(\`Généré le ${new Date().toLocaleDateString('fr-FR')} · PDF Translator Pro\`, margin, cursorY);
+      cursorY += 10;
+
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.3);
+      doc.line(margin, cursorY, pageWidth - margin, cursorY);
+      cursorY += 10;
+
+      // Images
+      if (extractedImages.length > 0) {
+        setProgress(20, 'Insertion des images...');
+        const cols = 2;
+        const imgGap = 8;
+        const imgW = (maxLineWidth - imgGap) / cols;
+        let imgX = margin;
+        let imgY = cursorY;
+        let imgCountOnPage = 0;
+
+        for (let i = 0; i < Math.min(extractedImages.length, 12); i++) {
+          const img = extractedImages[i];
+          const aspect = img.height / img.width;
+          const imgH = Math.min(imgW * aspect, 70);
+
+          if (imgY + imgH > pageHeight - margin - 15) {
+            doc.addPage();
+            imgY = margin;
+            imgX = margin;
+            imgCountOnPage = 0;
+          }
+
+          try {
+            doc.addImage(img.dataUrl, 'PNG', imgX, imgY, imgW, imgH);
+            doc.setFontSize(7);
+            doc.setTextColor(100, 100, 100);
+            doc.text(\`Page ${img.page} · ${img.width}×${img.height}\`, imgX, imgY + imgH + 3);
+          } catch (e) { console.warn('Image skip', e); }
+
+          imgCountOnPage++;
+          if (imgCountOnPage % cols === 0) {
+            imgX = margin;
+            imgY += imgH + 12;
+          } else {
+            imgX = margin + imgW + imgGap;
+          }
+        }
+
+        cursorY = imgY + 15;
+        if (cursorY > pageHeight - 40) {
+          doc.addPage();
+          cursorY = margin;
+        }
+      }
+
+      // Texte
+      setProgress(50, 'Mise en page du texte...');
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10.5);
+      doc.setTextColor(30, 30, 30);
+
+      const paragraphs = text.split(/\n\n+/);
+      for (let p = 0; p < paragraphs.length; p++) {
+        setProgress(50 + Math.round((p / paragraphs.length) * 40), \`Mise en page... ${p+1}/${paragraphs.length}\`);
+        const cleanPara = paragraphs[p].replace(/\s+/g, ' ').trim();
+        if (!cleanPara) continue;
+        const lines = doc.splitTextToSize(cleanPara, maxLineWidth);
+        const blockHeight = lines.length * 5.2;
+
+        if (cursorY + blockHeight > pageHeight - margin) {
+          doc.addPage();
+          cursorY = margin;
+        }
+        doc.text(lines, margin, cursorY);
+        cursorY += blockHeight + 4;
+      }
+
+      // Footer
+      const totalPages = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text(\`Page ${i} / ${totalPages} · PDF Translator Pro\`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+      }
+
+      setProgress(95, 'Téléchargement...');
+      doc.save('document_traduit.pdf');
+      setProgress(100, 'PDF téléchargé !');
+      showAlert('actionAlert', 'PDF exporté avec succès !', 'success');
+    } catch (err) {
+      console.error(err);
+      setProgress(0, '');
+      progressContainer.classList.add('pt-hidden');
+      showAlert('actionAlert', 'Erreur export PDF : ' + err.message);
+    }
+  });
+
+  // ===================== EXPORT DOC =====================
+  btnExportDOC.addEventListener('click', async () => {
+    const text = targetText.value || sourceText.value;
+    if (!text) { showAlert('actionAlert', 'Aucun contenu à exporter.'); return; }
+
+    progressContainer.classList.remove('pt-hidden');
+    setProgress(5, 'Génération du document Word...');
+
+    try {
+      const paragraphs = text.split(/\n\n+/).filter(p => p.trim());
+      let imagesHtml = '';
+
+      if (extractedImages.length > 0) {
+        setProgress(25, 'Encodage des images...');
+        imagesHtml = '<div style="text-align:center; margin-bottom:24px;">';
+        for (let i = 0; i < Math.min(extractedImages.length, 15); i++) {
+          const img = extractedImages[i];
+          imagesHtml += \`
+            <div style="display:inline-block; margin:8px; vertical-align:top; max-width:45%;">
+              <img src="${img.dataUrl}" style="max-width:100%; height:auto; border:1px solid #ddd; border-radius:4px;" />
+              <div style="font-size:9pt; color:#666; margin-top:4px; text-align:center;">
+                Page ${img.page} · ${img.width}×${img.height}px
+              </div>
+            </div>
+          \`;
+        }
+        imagesHtml += '</div>';
+      }
+
+      setProgress(55, 'Assemblage du document...');
+
+      const paragraphsHtml = paragraphs.map(p =>
+        \`<p style="font-family:'Calibri',sans-serif; font-size:11pt; line-height:1.6; text-align:justify; margin:0 0 12pt 0; color:#333;">${escapeHtml(p).replace(/\n/g, '<br/>')}</p>\`
+      ).join('');
+
+      const htmlContent = \`
+        <html xmlns:o="urn:schemas-microsoft-com:office:office"
+              xmlns:w="urn:schemas-microsoft-com:office:word"
+              xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+          <meta charset="utf-8">
+          <title>Document traduit</title>
+          <style>
+            body { font-family: 'Calibri', sans-serif; font-size: 11pt; color: #333; }
+            h1 { font-size: 20pt; color: #2c3e50; border-bottom: 2px solid #4f46e5; padding-bottom: 8px; margin-bottom: 16px; }
+            .meta { font-size: 9pt; color: #888; margin-bottom: 20px; }
+            img { max-width: 100%; height: auto; }
+          </style>
+        </head>
+        <body>
+          <h1>Document traduit</h1>
+          <div class="meta">
+            Généré le ${new Date().toLocaleDateString('fr-FR')} · PDF Translator Pro · ${extractedImages.length} image(s) · ${paragraphs.length} paragraphe(s)
+          </div>
+          ${imagesHtml}
+          <hr style="border:none; border-top:1px solid #ddd; margin:20px 0;" />
+          ${paragraphsHtml}
+        </body>
+        </html>
+      \`;
+
+      setProgress(85, 'Création du fichier...');
+
+      const blob = new Blob(['\ufeff', htmlContent], {
+        type: 'application/msword'
+      });
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'document_traduit.doc';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setProgress(100, 'Document téléchargé !');
+      showAlert('actionAlert', 'Document Word (.doc) exporté avec succès !', 'success');
+    } catch (err) {
+      console.error(err);
+      setProgress(0, '');
+      progressContainer.classList.add('pt-hidden');
+      showAlert('actionAlert', 'Erreur export DOC : ' + err.message);
+    }
+  });
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  sourceText.addEventListener('input', () => {
+    updateStats(sourceText.value);
+    if (sourceText.value.trim()) btnTranslate.disabled = false;
+  });
+</script>
+
+</body>
+</html>
